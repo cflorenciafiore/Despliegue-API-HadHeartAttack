@@ -2,16 +2,10 @@ import joblib
 import pandas as pd
 import os
 
-MODEL_PATH = "heart_attack_model.pkl"
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+model_path = os.path.join(BASE_DIR, "heart_attack_model.pkl")
 
-if not os.path.exists(MODEL_PATH):
-    raise FileNotFoundError(f"No se encontró el modelo en {MODEL_PATH}")
-
-try:
-    model = joblib.load(MODEL_PATH)
-    print("Modelo cargado correctamente")
-except Exception as e:
-    raise RuntimeError(f"Error cargando el modelo: {e}")
+model = None
 
 columns = [
     "State","Sex","GeneralHealth","PhysicalHealthDays","MentalHealthDays",
@@ -24,7 +18,14 @@ columns = [
 ]
 
 def predict(features: dict):
+    global model
+
+    if model is None:
+        model = joblib.load(model_path)
+
     df = pd.DataFrame([features])
-    df = df.reindex(columns=columns)
+    df = df[columns]
+
     prediction = model.predict(df)
+
     return int(prediction[0])
